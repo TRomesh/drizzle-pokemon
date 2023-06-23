@@ -8,8 +8,8 @@ Follow the live [demo]()
 Clone the project and install dependencies
 
 ```
-$ npm install
 $ cd drizzle-pokemon
+$ npm install
 $ npm run build
 $ npm run dev
 ```
