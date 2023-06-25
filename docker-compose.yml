@@ -1,6 +1,16 @@
 version: '3.8'
 services:
 
+  database:
+    container_name: drizzle-pgsql
+    image: postgres:15-alpine
+    env_file:
+      - .env
+    ports:
+      - 4321:5432
+    volumes:
+      - ./data:/var/lib/pgsql/data
+
   server:
     container_name: drizzle-server
     build:
@@ -12,18 +22,6 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     depends_on:
       database:
         condition: service_healthy
-
-  database:
-    container_name: drizzle-pgsql
-    image: postgres:latest
-    env_file:
-      - .env
-    ports:
-      - 54320:5432
-    volumes:
-      - ./data:/var/lib/pgsql/data
