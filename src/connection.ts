@@ -6,7 +6,7 @@ dotenv.config();
 
 // for query purposes
 const queryClient = postgres(
-  `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}@0.0.0.0:${process.env.DB_PORT}/${process.env.DB_NAME}`
+  `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`
 );
 
 export const db: PostgresJsDatabase = drizzle(queryClient);

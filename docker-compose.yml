@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+
+  server:
+    container_name: drizzle-server
+    build:
+      dockerfile: Dockerfile
+    ports:
+      - 4000:4000
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      database:
+        condition: service_healthy
+
+  database:
+    container_name: drizzle-pgsql
+    image: postgres:latest
+    env_file:
+      - .env
+    ports:
+      - 54320:5432
+    volumes:
+      - ./data:/var/lib/pgsql/data
