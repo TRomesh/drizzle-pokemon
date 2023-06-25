@@ -1,7 +1,7 @@
 import express, { Express, Request, Response } from "express";
 
 import dotenv from "dotenv";
-import { pokemons, power } from "./schema/schema";
+import { pokemon, power } from "./schema/schema";
 import { db } from "./connection";
 import { eq, and } from "drizzle-orm";
 
@@ -19,15 +19,15 @@ app.get("/ping", (_: Request, res: Response) => {
 });
 
 app.get("/pokemons", async (_: Request, res: Response) => {
-  const allPokemons = await db.select().from(pokemons);
+  const allPokemons = await db.select().from(pokemon);
   res.status(200).json(allPokemons);
 });
 
 app.get("/pokemon/:id", async (req: Request, res: Response) => {
   const allPokemons = await db
     .select()
-    .from(pokemons)
-    .where(eq(pokemons.id, parseInt(req.params.id)));
+    .from(pokemon)
+    .where(eq(pokemon.id, parseInt(req.params.id)));
   res.status(200).json(allPokemons);
 });
 
@@ -35,7 +35,7 @@ app.get("/powers", async (_: Request, res: Response) => {
   const allPowers = await db
     .select()
     .from(power)
-    .rightJoin(pokemons, eq(power.id, pokemons.id));
+    .rightJoin(pokemon, eq(power.id, pokemon.id));
   res.status(200).json(allPowers);
 });
 
@@ -49,14 +49,14 @@ app.get("/power/:id", async (req: Request, res: Response) => {
 
 app.post("/pokemon", async (req: Request, res: Response) => {
   const newPokemon = await db
-    .insert(pokemons)
+    .insert(pokemon)
     .values({
       name: req.body.name,
       weight: req.body.weight,
       height: req.body.height,
       description: req.body.description,
     })
-    .returning({ insertedId: pokemons.id });
+    .returning({ insertedId: pokemon.id });
   res.status(200).json(newPokemon);
 });
 
@@ -75,9 +75,9 @@ app.post("/power", async (req: Request, res: Response) => {
 
 app.delete("/pokemon", async (req: Request, res: Response) => {
   const deletedPokemonIds: { deletedId: number }[] = await db
-    .delete(pokemons)
-    .where(eq(pokemons.id, req.body.id))
-    .returning({ deletedId: pokemons.id });
+    .delete(pokemon)
+    .where(eq(pokemon.id, req.body.id))
+    .returning({ deletedId: pokemon.id });
   res.status(200).json(deletedPokemonIds);
 });
 
