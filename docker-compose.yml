@@ -4,12 +4,15 @@ services:
   database:
     container_name: drizzle-pgsql
     image: postgres:15-alpine
-    env_file:
-      - .env
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: supersecure
+      POSTGRES_DB: pokemon_db
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - 4321:5432
     volumes:
-      - ./data:/var/lib/pgsql/data
+      - ./pg_data:/var/lib/postgresql/data
 
   server:
     container_name: drizzle-server
