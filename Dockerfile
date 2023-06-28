@@ -1,4 +1,4 @@
-FROM node:18-alpine AS dependencies
+FROM node:18.16.0-alpine AS dependencies
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -9,7 +9,7 @@ COPY package.json package-lock.json ./
 # Install the project dependencies
 RUN npm ci
 
-FROM node:18-alpine AS build
+FROM node:18.16.0-alpine AS build
 
 WORKDIR /app
 COPY --from=dependencies /app/node_modules ./node_modules
