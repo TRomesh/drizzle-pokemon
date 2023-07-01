@@ -14,12 +14,12 @@ WORKDIR /home/node/app
 FROM base AS builder
 
 COPY --chown=node:node package*.json ./
-RUN --mount=type=secret,id=npmrc,mode=444,dst=/home/node/.npmrc yarn install --frozen-lockfile
+RUN --mount=type=secret,id=npmrc,mode=444,dst=/home/node/.npmrc npm install --frozen-lockfile
 
 COPY --chown=node:node . .
 
-RUN yarn build && \
-    yarn install --frozen-lockfile --offline --production
+RUN npm run build && \
+    npm install --frozen-lockfile --offline --production
 
 # Prod image
 # ==========
@@ -36,7 +36,10 @@ COPY --chown=node:node --from=builder /home/node/app/dist ./dist
 COPY --chown=node:node --from=builder /home/node/app/src ./src
 COPY --chown=node:node --from=builder /home/node/app/.env ./.env
 
+# Expose port 4000
 EXPOSE 4000
 
 ENTRYPOINT ["/sbin/tini", "--"]
+
+# starting the node server
 CMD ["node", "dist/src/index.js"]
