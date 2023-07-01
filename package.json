@@ -4,12 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npx tsc",
-    "start": "node dist/src/index.js",
+    "build": "rimraf ./dist && tsc",
+    "start": "node ./dist/src/index.js",
     "migrations:generate": "drizzle-kit generate:pg",
-    "migrations:push": "node dist/src/migrate.js",
+    "migrations:push": "node ./dist/src/migrate.js",
     "migrations:drop": "drizzle-kit drop --config=drizzle.config.ts",
-    "seed": "node dist/src/seed.js",
+    "seed": "node ./dist/src/seed.js",
     "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/src/index.js\""
   },
   "keywords": [],
@@ -27,6 +27,7 @@
     "concurrently": "^8.2.0",
     "drizzle-kit": "^0.18.1",
     "nodemon": "^1.14.9",
+    "rimraf": "^5.0.1",
     "typescript": "^5.1.3"
   }
 }

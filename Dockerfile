@@ -1,30 +1,42 @@
-FROM node:18.16.0-alpine AS dependencies
+FROM node:18-alpine AS base
 
-# Set the working directory inside the container
-WORKDIR /app
+RUN apk update && \
+    apk add --no-cache cmake g++ make python3 tini
 
-# Copy the package.json and package-lock.json files to the working directory
-COPY package.json package-lock.json ./
+# The `node` user has UID 1000 -
+# we need to use numeric UID here so Kubernetes can statically understand this is non-root.
+USER 1000
+RUN mkdir -p /home/node/app/node_modules
+WORKDIR /home/node/app
 
-# Install the project dependencies
-RUN npm ci
+# Intermediate Builder image for production
+# =========================================
+FROM base AS builder
 
-FROM node:18.16.0-alpine AS build
+COPY --chown=node:node package*.json ./
+RUN --mount=type=secret,id=npmrc,mode=444,dst=/home/node/.npmrc yarn install --frozen-lockfile
 
-WORKDIR /app
-COPY --from=dependencies /app/node_modules ./node_modules
+COPY --chown=node:node . .
 
-# Copy the entire project directory into the container
-COPY . .
+RUN yarn build && \
+    yarn install --frozen-lockfile --offline --production
 
-# Build server
-RUN npm run build
+# Prod image
+# ==========
+# This multi stage dockerfile makes sure that the prod image size is small
+FROM base AS prod
 
-# Run migrations
-RUN npm run migrations:push
+ENV NODE_ENV production
 
-# Expose the server on port 4000
+COPY --chown=node:node --from=builder /home/node/app/drizzle.config.ts ./
+COPY --chown=node:node --from=builder /home/node/app/package.json ./
+COPY --chown=node:node --from=builder /home/node/app/node_modules ./node_modules
+COPY --chown=node:node --from=builder /home/node/app/drizzle ./drizzle
+COPY --chown=node:node --from=builder /home/node/app/dist ./dist
+COPY --chown=node:node --from=builder /home/node/app/src ./src
+COPY --chown=node:node --from=builder /home/node/app/.env ./.env
+
 EXPOSE 4000
 
-# Set the command to start the server when the container is run
-CMD ["npm", "run", "start"]
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["node", "dist/src/index.js"]
