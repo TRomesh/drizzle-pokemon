@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.9'
 services:
 
   database:
@@ -10,9 +10,11 @@ services:
       POSTGRES_DB: pokemon_db
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - 4321:5432
+      - 5432:5432
     volumes:
       - ./pg_data:/var/lib/postgresql/data
+    networks:
+      - postgres
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
@@ -30,6 +32,29 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+    networks:
+      - postgres
+    restart: unless-stopped
+    depends_on:
+      migration:
+        condition: service_started
+      database:
+        condition: service_healthy
+
+  migration:
+    container_name: drizzle-migration
+    build: .
+    command: sh -c "npm run migrations:push"
+    volumes:
+      - .:/app
+    links:
+      - database
+    networks:
+      - postgres
     depends_on:
       database:
         condition: service_healthy
+
+networks:
+  postgres:
+    driver: bridge
